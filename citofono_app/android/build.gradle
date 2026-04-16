@@ -26,7 +26,7 @@ allprojects {
         maven { url 'https://www.jitpack.io' }
     }
 
-    // 🚀 SOLUCIÓN EFECTIVA: Desactivar la validación de Reanimated por la fuerza
+    // 🚀 SOLUCIÓN: Desactivar validación de Reanimated
     subprojects { project ->
         afterEvaluate {
             if (project.name.contains('reanimated')) {
@@ -36,6 +36,14 @@ allprojects {
                     }
                 }
             }
+        }
+    }
+
+    // 🛠️ SOLUCIÓN: Forzar versiones compatibles con Android 14 (SDK 34)
+    configurations.all {
+        resolutionStrategy {
+            force 'androidx.core:core:1.13.1'
+            force 'androidx.core:core-ktx:1.13.1'
         }
     }
 }
