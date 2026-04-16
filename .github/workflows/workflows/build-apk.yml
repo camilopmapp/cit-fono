@@ -26,7 +26,7 @@ jobs:
           cache-dependency-path: citofono_app/package-lock.json
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
         working-directory: citofono_app
 
       - name: Build APK
