@@ -4,12 +4,13 @@
 
 import { NativeModules, NativeEventEmitter } from 'react-native'
 import { DB } from '../db/database'
+import logger from '../utils/logger'
 
 const { CallDetector } = NativeModules
 
 // Verificar que el módulo nativo esté disponible
 if (!CallDetector) {
-  console.warn('[CallDetector] Módulo nativo no disponible — ¿compilaste el APK?')
+  logger.warn('[CallDetector] Módulo nativo no disponible — ¿compilaste el APK?')
 }
 
 const emitter = CallDetector ? new NativeEventEmitter(CallDetector) : null
@@ -25,11 +26,12 @@ export async function buscarPorNumero(numero) {
   try {
     // Buscar por los últimos 10 dígitos (ignora código de país)
     const sufijo = limpio.slice(-10)
-    const [res] = await DB.buscarTelefonoPorNumero(sufijo)
-    if (res) return res
-    return null
+    const res = await Promise.race([
+      DB.buscarTelefonoPorNumero(sufijo),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 2000)),
+    ])
+    return res || null
   } catch (e) {
-    console.log('[CallDetector] Error buscando número:', e)
     return null
   }
 }
@@ -41,7 +43,7 @@ export function iniciarDeteccion({
   onTerminada,   // () => void
 }) {
   if (!CallDetector || !emitter) {
-    console.warn('[CallDetector] No disponible')
+    logger.warn('[CallDetector] No disponible')
     return () => {}
   }
 
@@ -49,20 +51,20 @@ export function iniciarDeteccion({
 
   // Llamada entrante — buscar en BD quién es
   const subEntrante = emitter.addListener('CallIncoming', async (numero) => {
-    console.log('[CallDetector] Entrante:', numero)
+    logger.log('[CallDetector] Entrante:', numero)
     const residente = await buscarPorNumero(numero)
     onEntrante({ numero, residente })
   })
 
   // Llamada contestada
   const subContestada = emitter.addListener('CallAnswered', () => {
-    console.log('[CallDetector] Contestada')
+    logger.log('[CallDetector] Contestada')
     onContestada?.()
   })
 
   // Llamada terminada
   const subTerminada = emitter.addListener('CallEnded', () => {
-    console.log('[CallDetector] Terminada')
+    logger.log('[CallDetector] Terminada')
     onTerminada?.()
   })
 
@@ -79,14 +81,14 @@ export function iniciarDeteccion({
 export function activarModoKiosko() {
   if (CallDetector?.startKioskMode) {
     CallDetector.startKioskMode()
-    console.log('[Kiosko] Activado')
+    logger.log('[Kiosko] Activado')
   }
 }
 
 export function desactivarModoKiosko() {
   if (CallDetector?.stopKioskMode) {
     CallDetector.stopKioskMode()
-    console.log('[Kiosko] Desactivado')
+    logger.log('[Kiosko] Desactivado')
   }
 }
 

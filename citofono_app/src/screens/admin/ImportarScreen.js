@@ -56,6 +56,11 @@ export default function ImportarScreen({ navigation }) {
       const base64 = await RNFS.readFile(path, 'base64')
       const workbook = XLSX.read(base64, { type: 'base64' })
 
+      if (!workbook || !workbook.SheetNames || workbook.SheetNames.length === 0) {
+        Alert.alert('Error', 'El archivo Excel no tiene hojas o está corrupto.')
+        return
+      }
+
       // Primera hoja
       const sheetName = workbook.SheetNames[0]
       const sheet = workbook.Sheets[sheetName]
@@ -96,6 +101,7 @@ export default function ImportarScreen({ navigation }) {
       })
 
       // Validar preview
+      const TEL_REGEX = /^\d{7,15}$/
       const errs = []
       const validos = []
       mapped.forEach(r => {
@@ -109,6 +115,8 @@ export default function ImportarScreen({ navigation }) {
           errs.push({ fila: r._fila, msg: 'Número de apto faltante' })
         } else if (!tel || tel === 'undefined' || tel === 'null') {
           errs.push({ fila: r._fila, msg: 'Teléfono principal faltante' })
+        } else if (!TEL_REGEX.test(tel)) {
+          errs.push({ fila: r._fila, msg: `Teléfono inválido: "${tel}" (solo dígitos, 7-15)` })
         } else {
           validos.push(r)
         }
@@ -118,7 +126,6 @@ export default function ImportarScreen({ navigation }) {
       setErrores(errs)
       setFase('preview')
     } catch (e) {
-      console.log('Error Excel:', e)
       Alert.alert('Error', 'No se pudo procesar el archivo. Verifica el formato.')
     }
   }

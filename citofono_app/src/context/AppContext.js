@@ -5,6 +5,7 @@ import { DARK, LIGHT } from '../theme'
 import { DB } from '../db/database'
 import { iniciarDeteccion, activarModoKiosko, desactivarModoKiosko } from '../modules/callDetector'
 import * as navigation from '../navigation/navigationService'
+import logger from '../utils/logger'
 
 const AppContext = createContext(null)
 
@@ -31,7 +32,7 @@ export function AppProvider({ children }) {
       // Iniciar detección de llamadas global
       const cleanup = iniciarDeteccion({
         onEntrante: async ({ numero, residente }) => {
-          console.log('[GlobalDetector] Llamada entrante:', numero)
+          logger.log('[GlobalDetector] Llamada entrante:', numero)
           if (residente) {
             await DB.insertHistorial({
               torre:       residente.torre_nombre,
@@ -47,8 +48,8 @@ export function AppProvider({ children }) {
           // Navegación global
           navigation.navigate('LlamadaEntrante', { numero, residente })
         },
-        onContestada: () => console.log('[GlobalDetector] Contestada'),
-        onTerminada: () => console.log('[GlobalDetector] Terminada'),
+        onContestada: () => logger.log('[GlobalDetector] Contestada'),
+        onTerminada: () => logger.log('[GlobalDetector] Terminada'),
       })
 
       // Activar Kiosko si está configurado (por defecto en esta versión)

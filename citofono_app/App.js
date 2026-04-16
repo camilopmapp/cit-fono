@@ -56,7 +56,6 @@ function Root() {
         translucent={false}
       />
       <KioskoManager/>
-      <KioskoManager/>
       <NavigationContainer
         ref={navigationRef}
         theme={{

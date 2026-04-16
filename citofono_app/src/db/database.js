@@ -2,6 +2,7 @@
 // Incluye: llamadas bidireccionales, notas por residente,
 //          búsqueda por número, estadísticas completas
 import SQLite from 'react-native-sqlite-storage'
+import logger from '../utils/logger'
 
 SQLite.enablePromise(true)
 
@@ -13,7 +14,12 @@ export const DB = {
   //  INICIALIZACIÓN
   // ════════════════════════════════════════════════════════════
   async init() {
-    db = await SQLite.openDatabase({ name: 'citofonia.db', location: 'default' })
+    try {
+      db = await SQLite.openDatabase({ name: 'citofonia.db', location: 'default' })
+    } catch (e) {
+      logger.error('[DB] No se pudo abrir la base de datos:', e)
+      throw e
+    }
 
     // Config del sistema
     await db.executeSql(`CREATE TABLE IF NOT EXISTS config (
@@ -91,7 +97,7 @@ export const DB = {
       )
     }
 
-    console.log('[DB] v2 inicializada OK')
+    logger.log('[DB] v2 inicializada OK')
     return true
   },
 
