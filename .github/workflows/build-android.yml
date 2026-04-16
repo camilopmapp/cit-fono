@@ -31,8 +31,8 @@ jobs:
       - name: Build Android Debug APK
         run: |
           cd citofono_app/android
-          # Generamos el lanzador de gradle si no existe
-          gradle wrapper
+          # Forzamos la versión 8.3 que es compatible con Android 14
+          gradle wrapper --gradle-version 8.3
           chmod +x gradlew
           ./gradlew assembleDebug
 
