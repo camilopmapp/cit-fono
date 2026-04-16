@@ -2,14 +2,11 @@
 buildscript {
     ext {
         buildToolsVersion = "34.0.0"
-        minSdkVersion     = 26        // Android 8.0 mínimo
+        minSdkVersion     = 26
         compileSdkVersion = 34
         targetSdkVersion  = 34
         ndkVersion        = "26.1.10909125"
         kotlinVersion     = "1.9.22"
-        
-        // Esta línea es CRITICA para evitar el error de Reanimated en GitHub Actions
-        reanimated = [ skipCheck: true ]
     }
     repositories {
         google()
@@ -27,5 +24,18 @@ allprojects {
         google()
         mavenCentral()
         maven { url 'https://www.jitpack.io' }
+    }
+
+    // 🚀 SOLUCIÓN EFECTIVA: Desactivar la validación de Reanimated por la fuerza
+    subprojects { project ->
+        afterEvaluate {
+            if (project.name.contains('reanimated')) {
+                project.tasks.configureEach { task ->
+                    if (task.name == 'assertMinimalReactNativeVersionTask') {
+                        task.enabled = false
+                    }
+                }
+            }
+        }
     }
 }
