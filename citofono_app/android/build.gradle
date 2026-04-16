@@ -7,6 +7,10 @@ buildscript {
         targetSdkVersion  = 34
         ndkVersion        = "26.1.10909125"
         kotlinVersion     = "1.9.22"
+
+        // 🚀 SOLUCIÓN DEFINITIVA: Proveer la versión y ruta manual a Reanimated
+        reactNativeVersion = "0.73.6"
+        reactNativeDir = "${rootProject.projectDir}/../node_modules/react-native"
     }
     repositories {
         google()
@@ -26,20 +30,7 @@ allprojects {
         maven { url 'https://www.jitpack.io' }
     }
 
-    // 🚀 SOLUCIÓN: Desactivar validación de Reanimated
-    subprojects { project ->
-        afterEvaluate {
-            if (project.name.contains('reanimated')) {
-                project.tasks.configureEach { task ->
-                    if (task.name == 'assertMinimalReactNativeVersionTask') {
-                        task.enabled = false
-                    }
-                }
-            }
-        }
-    }
-
-    // 🛠️ SOLUCIÓN: Forzar versiones compatibles con Android 14 (SDK 34)
+    // 🛠️ Mantener el forzado de versiones de Android Core para evitar conflictos SDK 35
     configurations.all {
         resolutionStrategy {
             force 'androidx.core:core:1.13.1'
